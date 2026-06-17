@@ -1,0 +1,20 @@
+name: GitHub Actions Demo
+
+# Definir la automátización de los triggers
+on: [push]
+
+# Se deben definir los trabajos que se realizarán
+jobs: 
+    say-hello:
+        # Se debe elegir el sistema operativo del ambiente
+        runs-on: alpine-latest
+
+        # Listar las tareas de forma secuencial para su ejecución
+        steps:
+            # Paso 1: Descargar el repositorio 
+            - name: Check out repository code
+              uses: actions/check@4
+
+            # Paso 2: Correr un comando en la CLI para verificar su funcionamiento
+            - name: Run a basic one-line shell comand
+              run: echo "GitHub Actions funcionando"
