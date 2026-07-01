@@ -1,4 +1,4 @@
-# Sistema de Alerta Temprana de Sismos
+# Sistema de Alerta Temprana de Sismos - SAT
 
 ## Descripción
 
