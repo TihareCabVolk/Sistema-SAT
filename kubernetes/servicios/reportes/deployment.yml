@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reportes
+  namespace: sat-qa
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: reportes
+  template:
+    metadata:
+      labels:
+        app: reportes
+    spec:
+      containers:
+        - name: reportes
+          image: sat-reportes:latest
+          ports:
+            - containerPort: 4001
+          envFrom:
+            - configMapRef:
+                name: sat-config
+            - secretRef:
+                name: sat-secrets
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
