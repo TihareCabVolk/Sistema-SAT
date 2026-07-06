@@ -1,0 +1,30 @@
+# Entorno local del Servicio 3: broker + BD propia.
+# Con esto desarrollas y pruebas TODO sin necesitar los servicios 1 y 2.
+#   docker compose up -d
+#   go run ./cmd                                  # tu servicio
+#   go run ./tools/simulador-servicio2 -magnitud 7.2   # "servicio 2 falso"
+services:
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    ports:
+      - "5672:5672"    # AMQP (tu servicio)
+      - "15672:15672"  # UI web: http://localhost:15672 (guest/guest)
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 5s
+      retries: 10
+
+  db-servicio3:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: s3
+      POSTGRES_PASSWORD: s3pass
+      POSTGRES_DB: notificaciones
+    ports:
+      - "5433:5432"   # 5433 en el host para no chocar con otro postgres local
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - pgdata_s3:/var/lib/postgresql/data
+
+volumes:
+  pgdata_s3:
