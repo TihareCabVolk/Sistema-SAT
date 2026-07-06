@@ -1,11 +1,3 @@
-// Capa de API — reemplazar los mocks con fetch reales cuando el backend esté listo.
-// Variables de entorno necesarias: VITE_API_URL (ej. http://localhost:3000)
-//
-// Endpoints esperados (acordar con el equipo de backend):
-//   GET  /api/alerts       -> lista de alertas sísmicas
-//   POST /api/reports      -> enviar nuevo reporte sísmico
-//   GET  /api/alerts/:id   -> detalle de una alerta
-
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
 const MOCK_ALERTS = [
@@ -61,7 +53,6 @@ export async function getAlerts() {
 }
 
 export async function submitReport(data) {
-  // TODO: descomentar cuando el backend esté disponible
   // const res = await fetch(`${BASE_URL}/api/reports`, {
   //   method: 'POST',
   //   headers: { 'Content-Type': 'application/json' },

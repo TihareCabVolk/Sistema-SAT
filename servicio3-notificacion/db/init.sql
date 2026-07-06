@@ -1,4 +1,4 @@
--- Historial oficial de alertas (BD exclusiva del Servicio 3)
+-- Historial oficial de alertas 
 CREATE TABLE IF NOT EXISTS alertas (
     id                   UUID PRIMARY KEY,
     reporte_id           UUID NOT NULL,

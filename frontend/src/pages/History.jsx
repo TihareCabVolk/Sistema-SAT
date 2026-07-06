@@ -4,7 +4,7 @@ export default function History() {
       <header className="max-w-2xl">
         <h1 className="text-headline-lg text-primary mb-sm">Historial</h1>
         <p className="text-body-lg text-secondary">
-          Historial completo de eventos sísmicos. Disponible cuando el backend esté conectado.
+          Historial completo de eventos sísmicos.
         </p>
       </header>
     </main>

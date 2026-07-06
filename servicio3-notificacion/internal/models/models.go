@@ -2,8 +2,6 @@ package models
 
 import "time"
 
-// Envelope genérico de todos los eventos del sistema SAT.
-// Mantener el mismo "sobre" en los 3 servicios facilita la trazabilidad
 // (el event_id permite seguir un mensaje a través de todo el flujo).
 type Event struct {
 	EventID   string          `json:"event_id"`

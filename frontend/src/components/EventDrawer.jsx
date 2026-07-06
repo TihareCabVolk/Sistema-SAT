@@ -1,4 +1,4 @@
-// Pasos del flujo de microservicios — actualizar cuando el backend defina los nombres reales
+// flujo de microservicios 
 const TIMELINE_STEPS = [
   { label: 'Centro de Reportes (Microservicio 1)', desc: 'Reporte recibido mediante REST.' },
   { label: 'Validación de Sensores (Microservicio 2)', desc: 'Comparando datos con sensores cercanos.' },

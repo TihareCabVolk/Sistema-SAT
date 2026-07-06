@@ -1,4 +1,3 @@
-// Clases de estado hardcodeadas para que Tailwind las incluya en el bundle
 const STATUS_STYLES = {
   Validando: 'bg-yellow-100 text-yellow-800',
   Emitida: 'bg-green-100 text-green-800',

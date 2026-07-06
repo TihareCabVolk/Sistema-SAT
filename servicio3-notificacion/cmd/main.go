@@ -27,22 +27,22 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	// --- Base de datos (con reintentos, igual que el broker) ---
+	// Base de datos (con reintentos, igual que el broker) ---
 	db := conectarDB(cfg.DatabaseURL)
 	defer db.Close()
 
-	// --- Broker ---
+	// Broker
 	mq, err := broker.Connect(cfg.RabbitMQURL)
 	if err != nil {
 		log.Fatalf("no se pudo conectar a RabbitMQ: %v", err)
 	}
 	defer mq.Close()
 
-	// --- Wiring (inyección de dependencias manual) ---
+	// Wiring (inyección de dependencias manual) 
 	repo := repository.NewAlertaRepository(db)
 	svc := service.NewNotificacionService(repo, mq)
 
-	// --- Health check para liveness/readiness probes de Kubernetes ---
+	// Health check para liveness/readiness probes de Kubernetes 
 	go func() {
 		http.HandleFunc("/health", func(w http.ResponseWriter, _ *http.Request) {
 			if err := db.Ping(); err != nil {
@@ -58,7 +58,7 @@ func main() {
 		}
 	}()
 
-	// --- Loop principal de consumo (bloqueante) ---
+	// Loop principal de consumo
 	if err := mq.Consumir(ctx, svc.ProcesarSismoValidado); err != nil {
 		log.Fatalf("consumo terminó con error: %v", err)
 	}
