@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  mi-postgres:
+    image: postgres:15-alpine
+    container_name: db-reportes-local
+    environment:
+      POSTGRES_DB: db_reportes
+      POSTGRES_USER: dici_uta
+      POSTGRES_PASSWORD: alumnosdic1
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_reportes:/var/lib/postgresql/data 
+
+  mi-servicio-go:
+    build: .
+    container_name: servicio-1-go-local
+    ports:
+      - "4001:4001" 
+    depends_on:
+      - mi-postgres
+    environment:
+      - DB_HOST=mi-postgres
+      - DB_PORT=5432
+      - DB_USER=dici_uta
+      - DB_PASSWORD=alumnosdic1
+      - DB_NAME=db_reportes
+
+      - RABBITMQ_URL=amqp://admin:sat2026@host.docker.internal:5672/
+
+volumes:
+  postgres_data_reportes:
