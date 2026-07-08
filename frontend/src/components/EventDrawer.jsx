@@ -7,16 +7,18 @@ const TIMELINE_STEPS = [
 ]
 
 // Cuántos pasos están completos según el estado
-const DONE_STEPS = { Recibido: 1, Validando: 1, Emitida: 4, Error: 0 }
+const DONE_STEPS = { EMITIDA: 4 }
 // Qué paso está en progreso (1-indexed, null si ninguno)
-const IN_PROGRESS_STEP = { Validando: 2, Recibido: null, Emitida: null, Error: null }
+const IN_PROGRESS_STEP = { EMITIDA: null }
 
 // Colores del estado en el resumen
 const STATUS_TEXT = {
-  Validando: 'text-yellow-800',
-  Emitida: 'text-green-700',
-  Recibido: 'text-blue-700',
-  Error: 'text-red-700',
+  EMITIDA: 'text-green-700',
+}
+
+function formatHora(isoTimestamp) {
+  if (!isoTimestamp) return '--'
+  return new Date(isoTimestamp).toLocaleTimeString('es-CL')
 }
 
 function TimelineStep({ step, index, status }) {
@@ -58,11 +60,11 @@ export default function EventDrawer({ event, onClose }) {
   const summaryFields = event
     ? [
         ['ID', `#${event.id}`],
-        ['SENSOR', event.sensor],
-        ['MAGNITUD', event.magnitude != null ? `${event.magnitude} Mw` : '--'],
-        ['UBICACIÓN', event.location],
-        ['HORA', event.time],
-        ['ESTADO', event.status],
+        ['VALIDACIÓN', event.id_validacion],
+        ['MAGNITUD', event.magnitud != null ? `${event.magnitud} Mw` : '--'],
+        ['UBICACIÓN', `${event.epicentro_lat}, ${event.epicentro_lon}`],
+        ['HORA', formatHora(event.creado_en)],
+        ['ESTADO', event.estado],
       ]
     : []
 
@@ -106,7 +108,7 @@ export default function EventDrawer({ event, onClose }) {
                   <p className="text-label-sm text-on-surface-variant">{label}</p>
                   <p
                     className={`text-body-lg font-bold ${
-                      label === 'ESTADO' ? (STATUS_TEXT[event.status] ?? '') : ''
+                      label === 'ESTADO' ? (STATUS_TEXT[event.estado] ?? '') : ''
                     }`}
                   >
                     {value}
@@ -123,28 +125,28 @@ export default function EventDrawer({ event, onClose }) {
               <div className="relative pl-8 space-y-xl">
                 <div className="absolute left-[11px] top-2 bottom-2 w-[2px] bg-outline-variant" />
                 {TIMELINE_STEPS.map((step, i) => (
-                  <TimelineStep key={i} step={step} index={i} status={event.status} />
+                  <TimelineStep key={i} step={step} index={i} status={event.estado} />
                 ))}
               </div>
             </div>
 
             {/* Detalles técnicos */}
-            {event.signature && (
-              <div className="space-y-md pt-lg border-t border-outline-variant">
+            <div className="space-y-md pt-lg border-t border-outline-variant">
+              <div className="flex justify-between items-center">
+                <span className="text-body-md text-secondary">Zonas Afectadas</span>
+                <span className="text-label-md text-on-surface bg-outline-variant/20 px-2 py-0.5 rounded">
+                  {event.zonas_afectadas?.join(', ') || '--'}
+                </span>
+              </div>
+              {event.costo_emergencia != null && (
                 <div className="flex justify-between items-center">
-                  <span className="text-body-md text-secondary">Firma Digital</span>
-                  <span className="text-label-md text-on-surface bg-outline-variant/20 px-2 py-0.5 rounded">
-                    {event.signature}
+                  <span className="text-body-md text-secondary">Costo de Emergencia</span>
+                  <span className="text-body-md font-bold text-green-600">
+                    {event.costo_emergencia}
                   </span>
                 </div>
-                {event.latency && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-body-md text-secondary">Latencia de Red</span>
-                    <span className="text-body-md font-bold text-green-600">{event.latency}</span>
-                  </div>
-                )}
-              </div>
-            )}
+              )}
+            </div>
           </div>
         )}
 

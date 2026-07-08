@@ -1,8 +1,10 @@
 const STATUS_STYLES = {
-  Validando: 'bg-yellow-100 text-yellow-800',
-  Emitida: 'bg-green-100 text-green-800',
-  Recibido: 'bg-blue-100 text-blue-800',
-  Error: 'bg-red-100 text-red-800',
+  EMITIDA: 'bg-green-100 text-green-800',
+}
+
+function formatHora(isoTimestamp) {
+  if (!isoTimestamp) return '--'
+  return new Date(isoTimestamp).toLocaleTimeString('es-CL')
 }
 
 function exportJSON(alerts) {
@@ -37,7 +39,7 @@ export default function AlertHistory({ alerts, onSelect }) {
           <thead className="bg-surface-container-low">
             <tr className="text-label-md text-on-surface-variant border-b border-outline-variant">
               <th className="px-lg py-md">ID</th>
-              <th className="px-lg py-md">SENSOR</th>
+              <th className="px-lg py-md">VALIDACIÓN</th>
               <th className="px-lg py-md">MAGNITUD</th>
               <th className="px-lg py-md">UBICACIÓN</th>
               <th className="px-lg py-md">ESTADO</th>
@@ -53,21 +55,23 @@ export default function AlertHistory({ alerts, onSelect }) {
                 onClick={() => onSelect(alert)}
               >
                 <td className="px-lg py-md font-bold text-primary">#{alert.id}</td>
-                <td className="px-lg py-md">{alert.sensor}</td>
+                <td className="px-lg py-md">{alert.id_validacion}</td>
                 <td className="px-lg py-md">
-                  {alert.magnitude != null ? `${alert.magnitude} Mw` : '--'}
+                  {alert.magnitud != null ? `${alert.magnitud} Mw` : '--'}
                 </td>
-                <td className="px-lg py-md">{alert.location}</td>
+                <td className="px-lg py-md">
+                  {alert.epicentro_lat}, {alert.epicentro_lon}
+                </td>
                 <td className="px-lg py-md">
                   <span
                     className={`px-sm py-1 text-[10px] font-bold rounded uppercase tracking-wider ${
-                      STATUS_STYLES[alert.status] ?? 'bg-gray-100 text-gray-800'
+                      STATUS_STYLES[alert.estado] ?? 'bg-gray-100 text-gray-800'
                     }`}
                   >
-                    {alert.status}
+                    {alert.estado}
                   </span>
                 </td>
-                <td className="px-lg py-md text-secondary">{alert.time}</td>
+                <td className="px-lg py-md text-secondary">{formatHora(alert.creado_en)}</td>
                 <td className="px-lg py-md">
                   <button
                     className="flex items-center gap-xs text-primary hover:underline text-label-md"

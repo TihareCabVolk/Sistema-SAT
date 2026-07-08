@@ -1,5 +1,8 @@
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+const LOGISTICA_URL = import.meta.env.VITE_LOGISTICA_URL ?? 'http://localhost:4003'
+const REPORTES_URL = import.meta.env.VITE_REPORTES_URL ?? 'http://localhost:4001'
 
+// Datos de referencia usados durante el desarrollo inicial del frontend, antes
+// de que los servicios backend estuvieran disponibles. Ya no se usan.
 const MOCK_ALERTS = [
   {
     id: '6842',
@@ -42,24 +45,20 @@ const MOCK_ALERTS = [
     latency: null,
   },
 ]
+void MOCK_ALERTS
 
 export async function getAlerts() {
-  // TODO: descomentar cuando el backend esté disponible
-  // const res = await fetch(`${BASE_URL}/api/alerts`)
-  // if (!res.ok) throw new Error('Error al obtener alertas')
-  // return res.json()
-  void BASE_URL
-  return Promise.resolve([...MOCK_ALERTS])
+  const res = await fetch(`${LOGISTICA_URL}/api/alertas`)
+  if (!res.ok) throw new Error('Error al obtener alertas')
+  return res.json()
 }
 
 export async function submitReport(data) {
-  // const res = await fetch(`${BASE_URL}/api/reports`, {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify(data),
-  // })
-  // if (!res.ok) throw new Error('Error al enviar reporte')
-  // return res.json()
-  console.info('[MOCK] Enviando reporte al backend:', data)
-  return Promise.resolve({ success: true, id: String(Math.floor(Math.random() * 9000) + 1000) })
+  const res = await fetch(`${REPORTES_URL}/reportes`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  })
+  if (!res.ok) throw new Error('Error al enviar reporte')
+  return res.json()
 }
