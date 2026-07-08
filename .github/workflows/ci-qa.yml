@@ -20,6 +20,8 @@ jobs:
             context: backend/servicio-reportes
           - name: logistica
             context: backend/servicio-logistica
+          - name: validacion
+            context: backend/servicio-validacion
           - name: frontend
             context: frontend
           - name: nginx-gateway
@@ -85,5 +87,6 @@ jobs:
         run: |
           kubectl rollout status deployment/reportes -n $NAMESPACE --timeout=120s
           kubectl rollout status deployment/logistica -n $NAMESPACE --timeout=120s
+          kubectl rollout status deployment/validacion -n $NAMESPACE --timeout=120s
           kubectl rollout status deployment/frontend -n $NAMESPACE --timeout=120s
           kubectl rollout status deployment/nginx-gateway -n $NAMESPACE --timeout=120s

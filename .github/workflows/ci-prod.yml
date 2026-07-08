@@ -18,6 +18,8 @@ jobs:
         service:
           - name: reportes
             context: backend/servicio-reportes
+          - name: validacion
+            context: backend/servicio-validacion
           - name: logistica
             context: backend/servicio-logistica
           - name: frontend
@@ -74,6 +76,9 @@ jobs:
           kubectl set image deployment/logistica \
             logistica=${{ secrets.DOCKER_USERNAME }}/sat-logistica:prod-latest \
             -n $NAMESPACE
+          kubectl set image deployment/validacion \
+            validacion=${{ secrets.DOCKER_USERNAME }}/sat-validacion:prod-latest \
+            -n $NAMESPACE
           kubectl set image deployment/frontend \
             frontend=${{ secrets.DOCKER_USERNAME }}/sat-frontend:prod-latest \
             -n $NAMESPACE
@@ -85,5 +90,6 @@ jobs:
         run: |
           kubectl rollout status deployment/reportes -n $NAMESPACE --timeout=120s
           kubectl rollout status deployment/logistica -n $NAMESPACE --timeout=120s
+          kubectl rollout status deployment/validacion -n $NAMESPACE --timeout=120s
           kubectl rollout status deployment/frontend -n $NAMESPACE --timeout=120s
           kubectl rollout status deployment/nginx-gateway -n $NAMESPACE --timeout=120s
