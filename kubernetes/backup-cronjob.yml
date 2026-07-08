@@ -2,7 +2,6 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: backup-dbs
-  namespace: sat-qa
 spec:
   schedule: "*/10 * * * *"
   jobTemplate:

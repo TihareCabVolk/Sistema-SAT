@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: kibana
-  namespace: sat-qa
 spec:
   replicas: 1
   selector:

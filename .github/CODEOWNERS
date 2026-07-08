@@ -1,0 +1,11 @@
+# CODEOWNERS - Revisores obligatorios por zona del proyecto
+# Cuando alguien toca estos archivos, GitHub exige que el owner apruebe el PR
+
+# DevSecOps (tu) - infraestructura, CI/CD, K8s
+.github/**       @shado
+kubernetes/**    @shado
+nginx/**         @shado
+scripts/**       @shado
+
+# Backend (equipo de dev)
+backend/**       @shado

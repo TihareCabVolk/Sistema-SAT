@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: db-logistica
-  namespace: sat-qa
 spec:
   serviceName: db-logistica
   replicas: 1

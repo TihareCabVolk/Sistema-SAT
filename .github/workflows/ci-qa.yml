@@ -2,7 +2,7 @@ name: CI - QA
 
 on:
   push:
-    branches: [develop]
+    branches: [developer]
   workflow_dispatch:
 
 env:
