@@ -41,7 +41,7 @@ func main() {
 	svc := service.NewValidacionService(repo, cfg.RadioKm, cfg.VentanaSeg, cfg.MinSensores)
 	pub := publisher.NewRabbitPublisher(rmqConn, cfg.RabbitMQExchange)
 
-	cons := consumer.NewRabbitConsumer(rmqConn, cfg.ColaSenales, svc, pub)
+	cons := consumer.NewRabbitConsumer(rmqConn, cfg.ColaSenales, cfg.RabbitMQExchange, svc, pub)
 	go func() {
 		log.Println("[main] iniciando consumer RabbitMQ...")
 		if err := cons.Start(context.Background()); err != nil {

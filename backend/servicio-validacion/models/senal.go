@@ -25,7 +25,8 @@ type ValidacionPositiva struct {
 	IdSenal             string    `json:"id_senal"`
 	SensoresConfirmados []string  `json:"sensores_confirmados"`
 	MagnitudFinal       float64   `json:"magnitud_final"`
-	Epicentro           Ubicacion `json:"epicentro"`
+	Epicentro           Ubicacion `json:"epicentro"`	
+	ZonasAfectadas      []string  `json:"zonas_afectadas,omitempty"`
 }
 
 // fila guardada en la bd propia

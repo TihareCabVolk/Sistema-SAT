@@ -31,7 +31,7 @@ func (r *SenalRepository) BuscarRecientes(ctx context.Context, ventanaSeg int) (
 	rows, err := r.db.QueryContext(ctx, `
 		SELECT id, id_sensor, lat, lon, magnitud, profundidad_km, confianza, timestamp, validada
 		FROM senales
-		WHERE validada = false AND timestamp >= NOW() - ($1 || ' seconds')::interval
+		WHERE validada = false AND timestamp >= NOW() - ($1::text || ' seconds')::interval
 	`, ventanaSeg)
 	if err != nil {
 		return nil, err

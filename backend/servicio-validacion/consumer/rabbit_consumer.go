@@ -15,14 +15,17 @@ import (
 type RabbitConsumer struct {
 	conn      *amqp.Connection
 	cola      string
+	exchange  string
 	svc       *service.ValidacionService
 	publisher *publisher.RabbitPublisher
 }
 
-func NewRabbitConsumer(conn *amqp.Connection, cola string, svc *service.ValidacionService, pub *publisher.RabbitPublisher) *RabbitConsumer {
-	return &RabbitConsumer{
+func NewRabbitConsumer(conn *amqp.Connection, cola string, exchange string, 
+	svc *service.ValidacionService, pub *publisher.RabbitPublisher) *RabbitConsumer {	
+		return &RabbitConsumer{
 		conn:      conn,
 		cola:      cola,
+		exchange:  exchange,
 		svc:       svc,
 		publisher: pub,
 	}
@@ -37,6 +40,11 @@ func (c *RabbitConsumer) Start(ctx context.Context) error {
 
 	// servicio 1 publica al exchange default, la cola queda accesible directo por su nombre
 	q, err := ch.QueueDeclare(c.cola, true, false, false, false, nil)
+	if err != nil {
+		return err
+	}
+
+	err = ch.QueueBind(q.Name, "señal_recibida", c.exchange, false, nil)
 	if err != nil {
 		return err
 	}

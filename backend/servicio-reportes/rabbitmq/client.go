@@ -50,7 +50,6 @@ func InitRabbit() {
 		os.Exit(1)
 	}
 
-	# 
 	err = Canal.ExchangeDeclare(
 		Exchange,
 		"topic",
@@ -71,7 +70,7 @@ func PublicarEvento(cola string, payload []byte) error {
 
 	err := Canal.PublishWithContext(ctx,
 		Exchange,    // Exchange
-		routingKey,  // Routing key
+		cola,  // Routing key
 		false, // Mandatory
 		false, // Immediate
 			amqp.Publishing{
