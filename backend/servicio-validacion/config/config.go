@@ -21,7 +21,7 @@ func Load() *Config {
 		ServerPort:       getEnv("SERVER_PORT", "4002"),
 		DBValidacionURL:  getEnv("DB_VALIDACION_URL", "postgres://postgres:postgres@localhost:5432/validacion?sslmode=disable"),
 		RabbitMQURL:      getEnv("RABBITMQ_URL", "amqp://guest:guest@localhost:5672"),
-		RabbitMQExchange: getEnv("RABBITMQ_EXCHANGE", "sat.eventos"),
+		RabbitMQExchange: getEnv("RABBITMQ_EXCHANGE", "sat.events"),
 		ColaSenales:      getEnv("COLA_SENALES", "cola_señales_recibidas"),
 		RadioKm:          getEnvFloat("RADIO_KM", 100),
 		VentanaSeg:       getEnvInt("VENTANA_SEG", 60),

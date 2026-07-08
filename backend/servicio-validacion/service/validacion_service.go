@@ -28,7 +28,6 @@ func NewValidacionService(repo *repository.SenalRepository, radioKm float64, ven
 	}
 }
 
-// guarda la señal y revisa si ya hay suficientes sensores cercanos confirmando el mismo sismo
 func (s *ValidacionService) ProcesarSenal(ctx context.Context, sr *models.SenalRecibida) (*models.ValidacionPositiva, error) {
 	senal := &models.Senal{
 		ID:            uuid.New().String(),
@@ -111,7 +110,7 @@ func (s *ValidacionService) sensoresUnicos(senales []models.Senal) []string {
 	return sensores
 }
 
-// distancia entre dos coordenadas usando la formula de haversine
+// formula de haversine
 func distanciaKm(lat1, lon1, lat2, lon2 float64) float64 {
 	const radioTierraKm = 6371
 	dLat := gradosARadianes(lat2 - lat1)
