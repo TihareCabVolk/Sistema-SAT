@@ -7,5 +7,5 @@ import (
 
 
 func SetupRouter() {
-	http.HandleFunc("POST /reportes", handler.HandleReport)
+	http.HandleFunc("POST /api/reportes", handler.HandleReport)
 }

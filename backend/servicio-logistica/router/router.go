@@ -13,7 +13,7 @@ func SetupRouter(h *handler.Handler) *gin.Engine {
 		c.JSON(200, gin.H{"status": "ok"})
 	})
 
-	api := r.Group("/api")
+	api := r.Group("/api/logistica")
 	{
 		api.POST("/validacion", h.ProcesarValidacion)
 		api.GET("/alertas", h.ListarAlertas)
