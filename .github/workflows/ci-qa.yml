@@ -49,23 +49,18 @@ jobs:
 
   deploy:
     name: Deploy to QA
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, sat-qa]
     needs: build
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup kubectl
-        uses: azure/setup-kubectl@v4
-        with:
-          version: v1.28
-
-      - name: Configure kubeconfig
+      - name: Verify kubectl and cluster
         run: |
-          mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBECONFIG_QA }}" | base64 -d > $HOME/.kube/config
-          chmod 600 $HOME/.kube/config
+          echo "kubectl: $(kubectl version --client --short 2>/dev/null || kubectl version --client)"
+          kubectl cluster-info
+          kubectl get ns $NAMESPACE || kubectl create ns $NAMESPACE
 
       - name: Apply Kubernetes manifests
         run: |
