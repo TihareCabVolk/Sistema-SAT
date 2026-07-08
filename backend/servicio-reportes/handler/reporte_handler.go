@@ -58,7 +58,7 @@ func HandleReport(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err = rabbitmq.PublicarEvento("cola_señales_recibidas", payloadJSON)
+		err = rabbitmq.PublicarEvento("señal_recibida", payloadJSON)
 		if err != nil {
 			fmt.Printf("[TRACE-%s] ERROR EN RABBITMQ: %v\n", id, err)
 			return

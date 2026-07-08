@@ -15,8 +15,10 @@ var Client *sql.DB
 
 func InitDB() {
 	var err error
-	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"))
+	dsn := os.Getenv("DB_REPORTES_URL")
+	if dsn == "" {
+		dsn = "postgres://reportes:password@localhost:5432/reportes?sslmode=disable"
+	}
 
 	for i := 1; i <= 5; i++ {
 		Client, err = sql.Open("postgres", dsn)
@@ -58,7 +60,8 @@ func InitDB() {
 func GuardarSismo(traceID string, data models.SensorReport) error {
 
 	query := `INSERT INTO lecturas_sensores 
-	          (trace_id, id_sensor, latitud, longitud, magnitud, profundidad_km, confianza, timestamp) 
+	          (trace_id, id_sensor, latitud, longitud, magnitud, profundidad_km, confianza, 
+			  timestamp) 
 	          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
 
 	_, err := Client.Exec(query,

@@ -11,6 +11,7 @@ import (
 
 // via para enviar los mensajes
 var Canal *amqp.Channel
+var Exchange string
 
 func InitRabbit() {
 	var conn *amqp.Connection
@@ -19,6 +20,11 @@ func InitRabbit() {
 	rabbitURL := os.Getenv("RABBITMQ_URL")
 	if rabbitURL == "" {
 		rabbitURL = "amqp://guest:guest@localhost:5672/"
+	}
+
+	Exchange = os.Getenv("RABBITMQ_EXCHANGE")
+	if Exchange == "" {
+		Exchange = "sat.events"
 	}
 
 	// Intentos
@@ -44,8 +50,10 @@ func InitRabbit() {
 		os.Exit(1)
 	}
 
-	_, err = Canal.QueueDeclare(
-		"cola_señales_recibidas",
+	# 
+	err = Canal.ExchangeDeclare(
+		Exchange,
+		"topic",
 		true,
 		false,
 		false,
@@ -53,7 +61,7 @@ func InitRabbit() {
 		nil,
 	)
 	if err != nil {
-		fmt.Println("Error declarando la cola:", err)
+		fmt.Println("Error declarando el exchange:", err)
 	}
 }
 
@@ -62,13 +70,14 @@ func PublicarEvento(cola string, payload []byte) error {
 	defer cancel()
 
 	err := Canal.PublishWithContext(ctx,
-		"",    // Exchange
-		cola,  // Routing key
+		Exchange,    // Exchange
+		routingKey,  // Routing key
 		false, // Mandatory
 		false, // Immediate
-		amqp.Publishing{
-			ContentType: "application/json",
-			Body:        payload,
+			amqp.Publishing{
+			ContentType:  "application/json",
+			DeliveryMode: amqp.Persistent,
+			Body:         payload,
 		})
 	return err
 }
