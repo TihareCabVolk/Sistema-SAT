@@ -1,0 +1,134 @@
+version: '3.8'
+
+services:
+  db-reportes:
+    image: postgres:16-alpine
+    container_name: db-reportes
+    environment:
+      POSTGRES_DB: reportes
+      POSTGRES_USER: reportes
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata_reportes:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reportes"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  db-validacion:
+    image: postgres:16-alpine
+    container_name: db-validacion
+    environment:
+      POSTGRES_DB: validacion
+      POSTGRES_USER: validacion
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata_validacion:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U validacion"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  db-logistica:
+    image: postgres:16-alpine
+    container_name: db-logistica
+    environment:
+      POSTGRES_DB: logistica
+      POSTGRES_USER: logistica
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5434:5432"
+    volumes:
+      - pgdata_logistica:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U logistica"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3.13-alpine
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: sat-user
+      RABBITMQ_DEFAULT_PASS: sat-pass
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  servicio-reportes:
+    build:
+      context: ./backend/servicio-reportes
+      dockerfile: Dockerfile
+    container_name: servicio-reportes
+    ports:
+      - "4001:4001"
+    depends_on:
+      db-reportes:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: "4001"
+      DB_REPORTES_URL: postgres://reportes:password@db-reportes:5432/reportes?sslmode=disable
+      RABBITMQ_URL: amqp://sat-user:sat-pass@rabbitmq:5672/
+      RABBITMQ_EXCHANGE: sat.events
+
+  servicio-validacion:
+    build:
+      context: ./backend/servicio-validacion
+      dockerfile: Dockerfile
+    container_name: servicio-validacion
+    ports:
+      - "4002:4002"
+    depends_on:
+      db-validacion:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: "4002"
+      DB_VALIDACION_URL: postgres://validacion:password@db-validacion:5432/validacion?sslmode=disable
+      RABBITMQ_URL: amqp://sat-user:sat-pass@rabbitmq:5672/
+      RABBITMQ_EXCHANGE: sat.events
+      COLA_SENALES: cola_señales_recibidas
+      RADIO_KM: "100"
+      VENTANA_SEG: "60"
+      MIN_SENSORES: "3"
+
+  servicio-logistica:
+    build:
+      context: ./backend/servicio-logistica
+      dockerfile: Dockerfile
+    container_name: servicio-logistica
+    ports:
+      - "4003:4003"
+    depends_on:
+      db-logistica:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: "4003"
+      DB_LOGISTICA_URL: postgres://logistica:password@db-logistica:5432/logistica?sslmode=disable
+      RABBITMQ_URL: amqp://sat-user:sat-pass@rabbitmq:5672/
+      RABBITMQ_EXCHANGE: sat.events
+
+volumes:
+  pgdata_reportes:
+  pgdata_validacion:
+  pgdata_logistica:
+  rabbitmq_data:

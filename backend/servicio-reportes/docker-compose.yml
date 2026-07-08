@@ -1,29 +1,29 @@
-version: '3.8'
+# version: '3.8'
 
-services:
-  mi-postgres:
-    image: postgres:15-alpine
-    container_name: db-reportes-local
-    environment:
-      POSTGRES_DB: db_reportes
-      POSTGRES_USER: dici_uta
-      POSTGRES_PASSWORD: alumnosdic1
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data_reportes:/var/lib/postgresql/data 
+#services:
+#  mi-postgres:
+#    image: postgres:15-alpine
+#    container_name: db-reportes-local
+#    environment:
+#      POSTGRES_DB: db_reportes
+#      POSTGRES_USER: dici_uta
+#      POSTGRES_PASSWORD: alumnosdic1
+#    ports:
+#      - "5432:5432"
+#    volumes:
+#      - postgres_data_reportes:/var/lib/postgresql/data 
+#
+#  mi-servicio-go:
+#    build: .
+#    container_name: servicio-1-go-local
+#    ports:
+#      - "4001:4001" 
+##    depends_on:
+#      - mi-postgres
+#    environment:
+#      - DB_REPORTES_URL=postgres://dici_uta:alumnosdic1@mi-postgres:5432/db_reportes?sslmode=disable
+#      - RABBITMQ_URL=amqp://admin:sat2026@host.docker.internal:5672/
+#      - RABBITMQ_EXCHANGE=sat.events
 
-  mi-servicio-go:
-    build: .
-    container_name: servicio-1-go-local
-    ports:
-      - "4001:4001" 
-    depends_on:
-      - mi-postgres
-    environment:
-      - DB_REPORTES_URL=postgres://dici_uta:alumnosdic1@mi-postgres:5432/db_reportes?sslmode=disable
-      - RABBITMQ_URL=amqp://admin:sat2026@host.docker.internal:5672/
-      - RABBITMQ_EXCHANGE=sat.events
-
-volumes:
-  postgres_data_reportes:
+#volumes:
+#  postgres_data_reportes:
