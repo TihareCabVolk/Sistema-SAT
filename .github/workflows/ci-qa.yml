@@ -76,6 +76,9 @@ jobs:
           kubectl set image deployment/logistica \
             logistica=${{ secrets.DOCKER_USERNAME }}/sat-logistica:qa-latest \
             -n $NAMESPACE
+          kubectl set image deployment/validacion \
+            validacion=${{ secrets.DOCKER_USERNAME }}/sat-validacion:qa-latest \
+            -n $NAMESPACE
           kubectl set image deployment/frontend \
             frontend=${{ secrets.DOCKER_USERNAME }}/sat-frontend:qa-latest \
             -n $NAMESPACE
