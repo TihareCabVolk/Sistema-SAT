@@ -26,7 +26,6 @@ func (r *SenalRepository) Insertar(ctx context.Context, s *models.Senal) error {
 	return err
 }
 
-// trae las señales de los ultimos ventanaSeg segundos para comparar por distancia en memoria
 func (r *SenalRepository) BuscarRecientes(ctx context.Context, ventanaSeg int) ([]models.Senal, error) {
 	rows, err := r.db.QueryContext(ctx, `
 		SELECT id, id_sensor, lat, lon, magnitud, profundidad_km, confianza, timestamp, validada

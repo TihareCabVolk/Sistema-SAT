@@ -38,7 +38,6 @@ func (c *RabbitConsumer) Start(ctx context.Context) error {
 	}
 	defer ch.Close()
 
-	// servicio 1 publica al exchange default, la cola queda accesible directo por su nombre
 	q, err := ch.QueueDeclare(c.cola, true, false, false, false, nil)
 	if err != nil {
 		return err
