@@ -7,8 +7,6 @@ import (
 
 	"servicio-reportes/models"
 	"servicio-reportes/repository"
-
-	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 // El consumer que escucha la alerta_emitida, actualiza estado = 'EMITIDA'
