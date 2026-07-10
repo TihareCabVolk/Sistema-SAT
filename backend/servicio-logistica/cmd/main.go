@@ -71,13 +71,14 @@ func main() {
 	cons := consumer.NewRabbitConsumer(rmqConn, cfg.RabbitMQExchange, svc, pub)
 	go func() {
 		for {
-		log.Println("[main] iniciando consumer RabbitMQ...")
-		if err := cons.Start(context.Background()); err != nil {
-			log.Printf("[main] consumer terminó: %v. Reintentando en 3s...", err)
-			time.Sleep(3 * time.Second)
-			continue
+			log.Println("[main] iniciando consumer RabbitMQ...")
+			if err := cons.Start(context.Background()); err != nil {
+				log.Printf("[main] consumer terminó: %v. Reintentando en 3s...", err)
+				time.Sleep(3 * time.Second)
+				continue
+			}
+			break
 		}
-		break
 	}()
 
 	r := router.SetupRouter(h)
