@@ -22,15 +22,13 @@ export default function AlertHistory({ alerts, onSelect }) {
     <section className="lg:col-span-8 bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden">
       <div className="p-lg border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
         <div className="flex items-center gap-sm">
-          <span className="material-symbols-outlined text-primary-container">history</span>
           <h2 className="text-headline-md text-on-surface">Historial de Alertas</h2>
         </div>
         <button
           className="flex items-center gap-xs text-primary text-label-md hover:underline"
           onClick={() => exportJSON(alerts)}
         >
-          <span className="material-symbols-outlined text-[18px]">download</span>
-          EXPORTAR DATA
+          Exportar datos
         </button>
       </div>
 

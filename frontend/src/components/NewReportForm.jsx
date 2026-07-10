@@ -39,7 +39,6 @@ export default function NewReportForm({ onSuccess }) {
   return (
     <section className="lg:col-span-4 bg-surface-container-lowest border border-outline-variant p-lg rounded-xl flex flex-col gap-lg">
       <div className="flex items-center gap-sm">
-        <span className="material-symbols-outlined text-primary-container">add_alert</span>
         <h2 className="text-headline-md text-on-surface">Nuevo Reporte Sísmico</h2>
       </div>
 
@@ -132,10 +131,7 @@ export default function NewReportForm({ onSuccess }) {
           type="submit"
           disabled={loading}
         >
-          <span className={`material-symbols-outlined ${loading ? 'status-pulse' : ''}`}>
-            {loading ? 'sync' : 'send'}
-          </span>
-          {loading ? 'Enviando...' : 'Enviar Reporte'}
+          {loading ? 'Enviando...' : 'Enviar reporte'}
         </button>
       </form>
     </section>
