@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"sat-logistica/models"
+	"servicio-logistica/models"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )

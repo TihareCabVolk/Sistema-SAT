@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"log"
 
-	"sat-logistica/models"
-	"sat-logistica/publisher"
-	"sat-logistica/service"
+	"servicio-logistica/models"
+	"servicio-logistica/publisher"
+	"servicio-logistica/service"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )

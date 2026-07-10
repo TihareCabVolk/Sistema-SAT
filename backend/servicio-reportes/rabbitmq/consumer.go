@@ -12,7 +12,6 @@ import (
 )
 
 // El consumer que escucha la alerta_emitida, actualiza estado = 'EMITIDA'
-// 
 func StartConsumer() {
 	ch, err := Conn.Channel()
 	if err != nil {

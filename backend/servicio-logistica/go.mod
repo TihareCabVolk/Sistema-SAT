@@ -1,4 +1,4 @@
-module sat-logistica
+module servicio-logistica
 
 go 1.22
 

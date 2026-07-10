@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"sat-logistica/models"
+	"servicio-logistica/models"
 )
 
 type AlertaRepository struct {

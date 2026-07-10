@@ -27,7 +27,6 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: fluentbit
-  namespace: sat-qa
 spec:
   selector:
     matchLabels:

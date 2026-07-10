@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	"sat-logistica/models"
-	"sat-logistica/repository"
+	"servicio-logistica/models"
+	"servicio-logistica/repository"
 
 	"github.com/google/uuid"
 )
@@ -81,8 +81,6 @@ func (s *LogisticaService) calcularCosto(magnitud float64) float64 {
 	switch {
 	case magnitud >= 6.0:
 		return 1500000
-	case magnitud >= 5.0:
-		return 500000
 	case magnitud >= 4.0:
 		return 150000
 	default:

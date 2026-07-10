@@ -54,7 +54,7 @@ export async function getAlerts() {
 }
 
 export async function submitReport(data) {
-  const res = await fetch(`${REPORTES_URL}/reportes`, {
+  const res = await fetch(`${REPORTES_URL}/api/reportes`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),

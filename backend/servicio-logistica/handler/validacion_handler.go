@@ -3,8 +3,8 @@ package handler
 import (
 	"net/http"
 
-	"sat-logistica/models"
-	"sat-logistica/service"
+	"servicio-logistica/models"
+	"servicio-logistica/service"
 
 	"github.com/gin-gonic/gin"
 )

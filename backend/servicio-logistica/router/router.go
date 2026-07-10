@@ -1,7 +1,7 @@
 package router
 
 import (
-	"sat-logistica/handler"
+	"servicio-logistica/handler"
 
 	"github.com/gin-gonic/gin"
 )
