@@ -76,3 +76,11 @@ func GuardarSismo(traceID string, data models.SensorReport) error {
 
 	return err
 }
+
+func ActualizarEstado(traceID string, estado string) error {
+	_, err := Client.Exec(
+		`UPDATE lecturas_sensores SET estado = $1 WHERE trace_id = $2`,
+		estado, traceID,
+	)
+	return err
+}

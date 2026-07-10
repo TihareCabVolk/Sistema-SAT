@@ -16,6 +16,7 @@ func main() {
 	defer repository.Client.Close()
 
 	// 2. Cargar rutas
+	go rabbitmq.StartConsumer()
 	router.SetupRouter()
 
 	// 3. Levantar servidor

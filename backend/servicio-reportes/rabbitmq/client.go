@@ -11,10 +11,10 @@ import (
 
 // via para enviar los mensajes
 var Canal *amqp.Channel
+var Conn *amqp.Connection
 var Exchange string
 
 func InitRabbit() {
-	var conn *amqp.Connection
 	var err error
 
 	rabbitURL := os.Getenv("RABBITMQ_URL")
@@ -29,7 +29,7 @@ func InitRabbit() {
 
 	// Intentos
 	for i := 1; i <= 5; i++ {
-		conn, err = amqp.Dial(rabbitURL)
+		Conn, err = amqp.Dial(rabbitURL)
 		if err == nil {
 			fmt.Println("Conexión exitosa a RabbitMQ")
 			break
@@ -44,7 +44,7 @@ func InitRabbit() {
 	}
 
 	// Abrir canal de comunicación
-	Canal, err = conn.Channel()
+	Canal, err = Conn.Channel()
 	if err != nil {
 		fmt.Println("Error abriendo canal de RabbitMQ:", err)
 		os.Exit(1)

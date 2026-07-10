@@ -50,7 +50,7 @@ func (s *LogisticaService) ProcesarValidacion(ctx context.Context, vp *models.Va
 	return &models.AlertaEmitida{
 		Evento:          "alerta_emitida",
 		Timestamp:       time.Now().UTC(),
-		IdValidacion:    id,
+		IdValidacion:    vp.IdSenal,
 		NivelAlerta:     nivel,
 		ZonasAfectadas:  zonas,
 		CostoEmergencia: costo,
