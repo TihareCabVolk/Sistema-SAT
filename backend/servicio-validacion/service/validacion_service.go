@@ -8,8 +8,6 @@ import (
 
 	"servicio-validacion/models"
 	"servicio-validacion/repository"
-
-	"github.com/google/uuid"
 )
 
 type ValidacionService struct {
@@ -30,7 +28,7 @@ func NewValidacionService(repo *repository.SenalRepository, radioKm float64, ven
 
 func (s *ValidacionService) ProcesarSenal(ctx context.Context, sr *models.SenalRecibida) (*models.ValidacionPositiva, error) {
 	senal := &models.Senal{
-		ID:            uuid.New().String(),
+		ID:            sr.IDSenal,
 		IDSensor:      sr.IDSensor,
 		Lat:           sr.Ubicacion.Lat,
 		Lon:           sr.Ubicacion.Lon,

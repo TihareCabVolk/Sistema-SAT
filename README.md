@@ -47,6 +47,7 @@ Publicado por el **Servicio 1: Reportes** al recibir una señal de un sensor.
 ```json
 {
   "evento": "senal_recibida",
+  "id_senal": "uuid-del-reporte",
   "timestamp": "2026-07-03T14:30:00Z",
   "id_sensor": "SENSOR-001",
   "ubicacion": { "lat": -33.456, "lon": -70.648 },

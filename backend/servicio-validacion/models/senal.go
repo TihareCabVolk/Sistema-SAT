@@ -10,6 +10,7 @@ type Ubicacion struct {
 // lo que manda servicio 1
 type SenalRecibida struct {
 	Evento        string    `json:"evento"`
+	IdSenal		  strinng   `json:"id_senal"`
 	Timestamp     time.Time `json:"timestamp"`
 	IDSensor      string    `json:"id_sensor"`
 	Ubicacion     Ubicacion `json:"ubicacion"`
