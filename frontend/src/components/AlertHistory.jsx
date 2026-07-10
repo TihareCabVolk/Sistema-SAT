@@ -17,7 +17,8 @@ function exportJSON(alerts) {
   URL.revokeObjectURL(url)
 }
 
-export default function AlertHistory({ alerts, onSelect }) {
+export default function AlertHistory({ alerts = [], onSelect }) {
+  const safeAlerts = Array.isArray(alerts) ? alerts : []
   return (
     <section className="lg:col-span-8 bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden">
       <div className="p-lg border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
@@ -27,7 +28,7 @@ export default function AlertHistory({ alerts, onSelect }) {
         </div>
         <button
           className="flex items-center gap-xs text-primary text-label-md hover:underline"
-          onClick={() => exportJSON(alerts)}
+          onClick={() => exportJSON(safeAlerts)}
         >
           <span className="material-symbols-outlined text-[18px]">download</span>
           EXPORTAR DATA
@@ -48,7 +49,7 @@ export default function AlertHistory({ alerts, onSelect }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-outline-variant">
-            {alerts.map((alert) => (
+            {safeAlerts.map((alert) => (
               <tr
                 key={alert.id}
                 className="hover:bg-surface-container transition-colors cursor-pointer text-body-md"

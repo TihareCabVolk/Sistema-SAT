@@ -4,7 +4,8 @@ const API_BASE = import.meta.env.VITE_API_BASE ?? ''
 export async function getAlerts() {
   const res = await fetch(`${API_BASE}/api/logistica/alertas`)
   if (!res.ok) throw new Error('Error al obtener alertas')
-  return res.json()
+  const data = await res.json()
+  return Array.isArray(data) ? data : []
 }
 
 // envio de un reporte nuevo, y este dispara todo el flujo

@@ -11,12 +11,12 @@ export default function Monitoring() {
   const [toast, setToast] = useState(false)
 
   useEffect(() => {
-    getAlerts().then(setAlerts)
+    getAlerts().then(setAlerts).catch(() => setAlerts([]))
   }, [])
 
   const handleReportSuccess = () => {
     setToast(true)
-    getAlerts().then(setAlerts)
+    getAlerts().then(setAlerts).catch(() => {})
   }
 
   return (

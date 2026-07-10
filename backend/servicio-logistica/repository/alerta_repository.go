@@ -38,7 +38,7 @@ func (r *AlertaRepository) Listar(ctx context.Context) ([]models.Alerta, error) 
 	}
 	defer rows.Close()
 
-	var alertas []models.Alerta
+	alertas := make([]models.Alerta, 0)
 	for rows.Next() {
 		var a models.Alerta
 		var zonasJSON []byte
