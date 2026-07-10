@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"servicio-validacion/config"
 	"servicio-validacion/consumer"
@@ -43,10 +44,14 @@ func main() {
 
 	cons := consumer.NewRabbitConsumer(rmqConn, cfg.ColaSenales, cfg.RabbitMQExchange, svc, pub)
 	go func() {
+		for {
 		log.Println("[main] iniciando consumer RabbitMQ...")
 		if err := cons.Start(context.Background()); err != nil {
-			log.Printf("[main] consumer terminó: %v", err)
+			log.Printf("[main] consumer terminó: %v. Reintentando en 3s...", err)
+			time.Sleep(3 * time.Second)
+			continue
 		}
+		break
 	}()
 
 	r := router.SetupRouter()

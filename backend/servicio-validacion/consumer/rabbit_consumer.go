@@ -38,6 +38,11 @@ func (c *RabbitConsumer) Start(ctx context.Context) error {
 	}
 	defer ch.Close()
 
+	err = ch.ExchangeDeclare(c.exchange, "topic", true, false, false, false, nil)
+	if err != nil {
+		return err
+	}
+
 	q, err := ch.QueueDeclare(c.cola, true, false, false, false, nil)
 	if err != nil {
 		return err
