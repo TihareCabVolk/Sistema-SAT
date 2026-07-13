@@ -1,4 +1,5 @@
-const API_BASE = import.meta.env.VITE_API_BASE ?? ''
+const LOGISTICA_URL = import.meta.env.VITE_LOGISTICA_URL ?? ''
+const REPORTES_URL = import.meta.env.VITE_REPORTES_URL ?? ''
 
 // devuelve todas las alertas sismicas registradas para mostrarlas en el frontend
 export async function getAlerts() {
