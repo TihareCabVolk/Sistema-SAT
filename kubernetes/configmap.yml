@@ -7,3 +7,7 @@ data:
   SERVICIO_REPORTES_URL: "http://svc-reportes:4001"
   SERVICIO_VALIDACION_URL: "http://svc-validacion:4002"
   SERVICIO_LOGISTICA_URL: "http://svc-logistica:4003"
+  COLA_SENALES: "cola_señales_recibidas"
+  RADIO_KM: "100"
+  VENTANA_SEG: "60"
+  MIN_SENSORES: "3"
