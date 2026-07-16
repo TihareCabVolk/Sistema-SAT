@@ -9,25 +9,23 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-// via para enviar los mensajes
 var Canal *amqp.Channel
 var Conn *amqp.Connection
 var Exchange string
 
-func InitRabbit() {
+func getEnv(key, defaultValue string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return defaultValue
+}
+
+func InitRabbit() error {
 	var err error
 
-	rabbitURL := os.Getenv("RABBITMQ_URL")
-	if rabbitURL == "" {
-		rabbitURL = "amqp://guest:guest@localhost:5672/"
-	}
+	rabbitURL := getEnv("RABBITMQ_URL", "amqp://guest:guest@localhost:5672/")
+	Exchange = getEnv("RABBITMQ_EXCHANGE", "sat.events")
 
-	Exchange = os.Getenv("RABBITMQ_EXCHANGE")
-	if Exchange == "" {
-		Exchange = "sat.events"
-	}
-
-	// Intentos
 	for i := 1; i <= 5; i++ {
 		Conn, err = amqp.Dial(rabbitURL)
 		if err == nil {
@@ -37,17 +35,13 @@ func InitRabbit() {
 		fmt.Printf("Esperando a RabbitMQ... (Intento %d/5)\n", i)
 		time.Sleep(3 * time.Second)
 	}
-
 	if err != nil {
-		fmt.Println("No se pudo conectar a RabbitMQ:", err)
-		os.Exit(1)
+		return err
 	}
 
-	// Abrir canal de comunicación
 	Canal, err = Conn.Channel()
 	if err != nil {
-		fmt.Println("Error abriendo canal de RabbitMQ:", err)
-		os.Exit(1)
+		return err
 	}
 
 	err = Canal.ExchangeDeclare(
@@ -60,7 +54,18 @@ func InitRabbit() {
 		nil,
 	)
 	if err != nil {
-		fmt.Println("Error declarando el exchange:", err)
+		return err
+	}
+
+	return nil
+}
+
+func Close() {
+	if Canal != nil {
+		Canal.Close()
+	}
+	if Conn != nil {
+		Conn.Close()
 	}
 }
 
@@ -69,11 +74,11 @@ func PublicarEvento(cola string, payload []byte) error {
 	defer cancel()
 
 	err := Canal.PublishWithContext(ctx,
-		Exchange,    // Exchange
-		cola,  // Routing key
-		false, // Mandatory
-		false, // Immediate
-			amqp.Publishing{
+		Exchange,
+		cola,
+		false,
+		false,
+		amqp.Publishing{
 			ContentType:  "application/json",
 			DeliveryMode: amqp.Persistent,
 			Body:         payload,

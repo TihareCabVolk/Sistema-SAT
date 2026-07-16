@@ -24,11 +24,13 @@ func HandleReport(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)
-	json.NewEncoder(w).Encode(map[string]string{
+	if err := json.NewEncoder(w).Encode(map[string]string{
 		"status":   "recibido",
 		"trace_id": traceID,
 		"message":  "Señal capturada. Procesando guardado asíncrono.",
-	})
+	}); err != nil {
+		fmt.Printf("[TRACE-%s] error escribiendo respuesta: %v\n", traceID, err)
+	}
 
 	go func(id string, data models.SensorReport) {
 		fmt.Printf("[TRACE-%s] Guardando registro en Postgres\n", id)

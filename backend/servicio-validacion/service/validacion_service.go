@@ -26,7 +26,17 @@ func NewValidacionService(repo *repository.SenalRepository, radioKm float64, ven
 	}
 }
 
+func (s *ValidacionService) EstaValidada(ctx context.Context, id string) (bool, error) {
+	return s.repo.EstaValidada(ctx, id)
+}
+
 func (s *ValidacionService) ProcesarSenal(ctx context.Context, sr *models.SenalRecibida) (*models.ValidacionPositiva, error) {
+	tx, err := s.repo.BeginTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
 	senal := &models.Senal{
 		ID:            sr.IDSenal,
 		IDSensor:      sr.IDSensor,
@@ -38,11 +48,11 @@ func (s *ValidacionService) ProcesarSenal(ctx context.Context, sr *models.SenalR
 		Timestamp:     sr.Timestamp,
 	}
 
-	if err := s.repo.Insertar(ctx, senal); err != nil {
+	if err := s.repo.InsertarTx(ctx, tx, senal); err != nil {
 		return nil, err
 	}
 
-	recientes, err := s.repo.BuscarRecientes(ctx, s.ventanaSeg)
+	recientes, err := s.repo.BuscarRecientesTx(ctx, tx, s.ventanaSeg)
 	if err != nil {
 		return nil, err
 	}
@@ -51,6 +61,9 @@ func (s *ValidacionService) ProcesarSenal(ctx context.Context, sr *models.SenalR
 
 	sensores := s.sensoresUnicos(cercanas)
 	if len(sensores) < s.minSensores {
+		if err := tx.Commit(); err != nil {
+			return nil, err
+		}
 		log.Printf("[validacion] señal %s guardada, %d/%d sensores confirmados", senal.ID, len(sensores), s.minSensores)
 		return nil, nil
 	}
@@ -65,7 +78,11 @@ func (s *ValidacionService) ProcesarSenal(ctx context.Context, sr *models.SenalR
 	}
 	n := float64(len(cercanas))
 
-	if err := s.repo.MarcarValidadas(ctx, ids); err != nil {
+	if err := s.repo.MarcarValidadasTx(ctx, tx, ids); err != nil {
+		return nil, err
+	}
+
+	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
 
@@ -108,7 +125,6 @@ func (s *ValidacionService) sensoresUnicos(senales []models.Senal) []string {
 	return sensores
 }
 
-// formula de haversine
 func distanciaKm(lat1, lon1, lat2, lon2 float64) float64 {
 	const radioTierraKm = 6371
 	dLat := gradosARadianes(lat2 - lat1)

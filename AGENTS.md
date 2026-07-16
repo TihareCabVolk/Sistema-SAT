@@ -14,27 +14,33 @@
 
 ## Repo layout
 
-- `backend/servicio-validacion/` — validation microservice (mostly empty)
-- `backend/servicio-logistica/` — logistics microservice (`cmd/main.go` only)
-- `backend/servicio-reportes/` — reports intake microservice (empty)
+- `backend/servicio-validacion/` — validation microservice (Gin + RabbitMQ consumer, PostgreSQL)
+- `backend/servicio-logistica/` — logistics microservice (Gin + RabbitMQ consumer/publisher, PostgreSQL)
+- `backend/servicio-reportes/` — reports intake microservice (stdlib net/http + RabbitMQ, PostgreSQL)
 - `kubernetes/` — full K8s manifests
 - `.github/workflows/` — CI/CD: `develop`→QA, `main`→prod
 
 ## Current state
 
-**No Go code has been written yet** — most directories contain only a `Dockerfile`.
-- No `go.mod`/`go.sum` — run `go mod init` before writing code.
-- `.env` is empty; populate with `RABBITMQ_URL`, `SERVICIO_*_URL` as needed.
-- The Go backend `dockerfile` at root references Go 1.26; individual service Dockerfiles use Go 1.22.
+**All 3 microservices have full Go implementations** with `go.mod`/`go.sum` and multi-stage Dockerfiles.
+
+| Service | Framework | Port | Consumer | Publisher | DB |
+|---|---|---|---|---|---|
+| reportes | net/http | 4001 | `alerta_emitida` → update estado | `senal_recibida` | `db-reportes` |
+| validacion | Gin | 4002 | `senal_recibida` → validate + Haversine | `validacion_positiva` | `db-validacion` |
+| logistica | Gin | 4003 | `validacion_positiva` → create alerta | `alerta_emitida` | `db-logistica` |
+
+Pending:
+- `frontend/` — directory exists but no implementation yet
 
 ## Getting started (writing code)
 
 ```bash
-# Initialize a Go service (do this first)
-cd backend/servicio-<name> && go mod init <module-path>
+# Build a service
+cd backend/servicio-<name> && go build ./...
 
-# Build
-cd backend/servicio-<name> && go build -o /dev/null ./...
+# Run vet
+cd backend/servicio-<name> && go vet ./...
 
 # Build Docker image
 docker build -t sat-<name>:latest backend/servicio-<name>
@@ -60,6 +66,18 @@ docker build -t sat-<name>:latest backend/servicio-<name>
   - Creates a report with `fecha`, `grado`, `emision`
   - Prints a confirmation message to stdout/stderr
   - Updates the database record status to `"emitida"`
+- `servicio-validacion` uses `FOR UPDATE SKIP LOCKED` dentro de una transacción para evitar race conditions entre réplicas concurrentes
+
+## Recent changes (backend/fix branch)
+
+| Change | Archivos |
+|--------|----------|
+| Race condition fix | `servicio-validacion/repository/senal_repository.go`, `service/validacion_service.go` |
+| `SERVER_PORT` en ConfigMap + deployments | `kubernetes/configmap.yml`, `kubernetes/servicios/*/deployment.yml` |
+| Eliminar `demo.yml` | `.github/workflows/demo.yml` |
+| Retry con backoff + graceful shutdown | `servicio-{reportes,validacion,logistica}/cmd/main.go` |
+| autoAck=false + DLQ + idempotencia | `servicio-{reportes,validacion,logistica}/consumer/*.go` |
+| Fix ignored errors (Scan, Marshal, Unmarshal) | `servicio-logistica/repository/alerta_repository.go`, `servicio-reportes/handler/reporte_handler.go` |
 
 ## CI/CD
 

@@ -22,6 +22,9 @@ spec:
                 name: sat-config
             - secretRef:
                 name: sat-secrets
+          env:
+            - name: SERVER_PORT
+              value: "4003"
           resources:
             requests:
               memory: "64Mi"

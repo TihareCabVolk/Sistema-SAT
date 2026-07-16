@@ -19,6 +19,10 @@ func NewLogisticaService(repo *repository.AlertaRepository) *LogisticaService {
 	return &LogisticaService{repo: repo}
 }
 
+func (s *LogisticaService) ExistePorValidacion(ctx context.Context, idValidacion string) (bool, error) {
+	return s.repo.ExistePorValidacion(ctx, idValidacion)
+}
+
 func (s *LogisticaService) ProcesarValidacion(ctx context.Context, vp *models.ValidacionPositiva) (*models.AlertaEmitida, error) {
 	nivel := s.calcularNivelAlerta(vp.MagnitudFinal)
 	costo := s.calcularCosto(vp.MagnitudFinal)

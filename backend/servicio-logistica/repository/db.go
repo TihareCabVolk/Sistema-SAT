@@ -30,16 +30,17 @@ func InitDB(dsn string) (*SafeDB, error) {
 	}
 
 	query := `
-	CREATE TABLE IF NOT EXISTS senales (
+	CREATE TABLE IF NOT EXISTS alertas (
 		id VARCHAR(36) PRIMARY KEY,
-		id_sensor VARCHAR(50) NOT NULL,
-		lat DOUBLE PRECISION NOT NULL,
-		lon DOUBLE PRECISION NOT NULL,
+		id_validacion VARCHAR(36) NOT NULL,
 		magnitud DOUBLE PRECISION NOT NULL,
-		profundidad_km INTEGER NOT NULL,
-		confianza DOUBLE PRECISION NOT NULL,
-		timestamp TIMESTAMP NOT NULL,
-		validada BOOLEAN DEFAULT false
+		epicentro_lat DOUBLE PRECISION NOT NULL,
+		epicentro_lon DOUBLE PRECISION NOT NULL,
+		nivel_alerta VARCHAR(20) NOT NULL,
+		costo_emergencia DOUBLE PRECISION NOT NULL,
+		zonas_afectadas JSONB DEFAULT '[]',
+		estado VARCHAR(20) DEFAULT 'EMITIDA',
+		creado_en TIMESTAMP NOT NULL
 	);`
 
 	if _, err = db.Exec(query); err != nil {
@@ -47,4 +48,8 @@ func InitDB(dsn string) (*SafeDB, error) {
 	}
 
 	return &SafeDB{DB: db}, nil
+}
+
+func (s *SafeDB) Close() error {
+	return s.DB.Close()
 }

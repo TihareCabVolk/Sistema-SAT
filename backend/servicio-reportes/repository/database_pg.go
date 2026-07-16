@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"os"
@@ -13,12 +14,16 @@ import (
 
 var Client *sql.DB
 
-func InitDB() {
-	var err error
-	dsn := os.Getenv("DB_REPORTES_URL")
-	if dsn == "" {
-		dsn = "postgres://reportes:password@localhost:5432/reportes?sslmode=disable"
+func getEnv(key, defaultValue string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
 	}
+	return defaultValue
+}
+
+func InitDB() error {
+	var err error
+	dsn := getEnv("DB_REPORTES_URL", "postgres://reportes:password@localhost:5432/reportes?sslmode=disable")
 
 	for i := 1; i <= 5; i++ {
 		Client, err = sql.Open("postgres", dsn)
@@ -32,10 +37,8 @@ func InitDB() {
 		fmt.Printf("Esperando a la base de datos... (Intento %d/5)\n", i)
 		time.Sleep(3 * time.Second)
 	}
-
 	if err != nil {
-		fmt.Println("No se pudo conectar a la base de datos:", err)
-		os.Exit(1)
+		return err
 	}
 
 	query := `
@@ -53,8 +56,22 @@ func InitDB() {
 
 	_, err = Client.Exec(query)
 	if err != nil {
-		fmt.Println("Error al crear la tabla:", err)
+		return err
 	}
+
+	return nil
+}
+
+func EstadoPorTraceID(ctx context.Context, traceID string) (string, error) {
+	var estado string
+	err := Client.QueryRowContext(ctx, `SELECT estado FROM lecturas_sensores WHERE trace_id = $1`, traceID).Scan(&estado)
+	if err == sql.ErrNoRows {
+		return "", nil
+	}
+	if err != nil {
+		return "", err
+	}
+	return estado, nil
 }
 
 func GuardarSismo(traceID string, data models.SensorReport) error {

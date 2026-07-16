@@ -17,14 +17,29 @@ func NewAlertaRepository(db *sql.DB) *AlertaRepository {
 }
 
 func (r *AlertaRepository) Insertar(ctx context.Context, a *models.Alerta) error {
-	zonasJSON, _ := json.Marshal(a.ZonasAfectadas)
-	_, err := r.db.ExecContext(ctx, `
+	zonasJSON, err := json.Marshal(a.ZonasAfectadas)
+	if err != nil {
+		return err
+	}
+	_, err = r.db.ExecContext(ctx, `
 		INSERT INTO alertas (id, id_validacion, magnitud, epicentro_lat, epicentro_lon,
 		                     nivel_alerta, costo_emergencia, zonas_afectadas, estado, creado_en)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
 	`, a.ID, a.IdValidacion, a.Magnitud, a.EpicentroLat, a.EpicentroLon,
 		a.NivelAlerta, a.CostoEmergencia, zonasJSON, a.Estado)
 	return err
+}
+
+func (r *AlertaRepository) ExistePorValidacion(ctx context.Context, idValidacion string) (bool, error) {
+	var id string
+	err := r.db.QueryRowContext(ctx, `SELECT id FROM alertas WHERE id_validacion = $1`, idValidacion).Scan(&id)
+	if err == sql.ErrNoRows {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 func (r *AlertaRepository) Listar(ctx context.Context) ([]models.Alerta, error) {
@@ -42,10 +57,14 @@ func (r *AlertaRepository) Listar(ctx context.Context) ([]models.Alerta, error) 
 	for rows.Next() {
 		var a models.Alerta
 		var zonasJSON []byte
-		rows.Scan(&a.ID, &a.IdValidacion, &a.Magnitud,
+		if err := rows.Scan(&a.ID, &a.IdValidacion, &a.Magnitud,
 			&a.EpicentroLat, &a.EpicentroLon, &a.NivelAlerta,
-			&a.CostoEmergencia, &zonasJSON, &a.Estado, &a.CreadoEn)
-		json.Unmarshal(zonasJSON, &a.ZonasAfectadas)
+			&a.CostoEmergencia, &zonasJSON, &a.Estado, &a.CreadoEn); err != nil {
+			return nil, err
+		}
+		if err := json.Unmarshal(zonasJSON, &a.ZonasAfectadas); err != nil {
+			return nil, err
+		}
 		alertas = append(alertas, a)
 	}
 	return alertas, rows.Err()
@@ -69,6 +88,8 @@ func (r *AlertaRepository) ObtenerPorID(ctx context.Context, id string) (*models
 		return nil, err
 	}
 
-	json.Unmarshal(zonasJSON, &a.ZonasAfectadas)
+	if err := json.Unmarshal(zonasJSON, &a.ZonasAfectadas); err != nil {
+		return nil, err
+	}
 	return &a, nil
 }
