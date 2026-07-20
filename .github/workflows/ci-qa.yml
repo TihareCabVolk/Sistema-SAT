@@ -51,7 +51,7 @@ jobs:
 
   deploy:
     name: Deploy to QA
-    runs-on: [self-hosted, sat-qa]
+    runs-on: [self-hosted, sat]
     needs: build
 
     steps:

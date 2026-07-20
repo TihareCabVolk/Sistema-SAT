@@ -27,6 +27,15 @@ func NewValidacionService(repo *repository.SenalRepository, radioKm float64, ven
 }
 
 func (s *ValidacionService) ProcesarSenal(ctx context.Context, sr *models.SenalRecibida) (*models.ValidacionPositiva, error) {
+	validada, err := s.repo.EstaValidada(ctx, sr.IDSenal)
+	if err != nil {
+		return nil, err
+	}
+	if validada {
+		log.Printf("[validacion] idempotencia: señal %s ya validada, ignorando", sr.IDSenal)
+		return nil, nil
+	}
+
 	senal := &models.Senal{
 		ID:            sr.IDSenal,
 		IDSensor:      sr.IDSensor,

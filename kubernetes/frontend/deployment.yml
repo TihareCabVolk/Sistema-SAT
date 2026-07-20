@@ -12,11 +12,30 @@ spec:
       labels:
         app: frontend
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: frontend
+              topologyKey: "kubernetes.io/hostname"
       containers:
         - name: frontend
           image: sat-frontend:latest
           ports:
             - containerPort: 80
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 3
+            periodSeconds: 10
           resources:
             requests:
               memory: "32Mi"

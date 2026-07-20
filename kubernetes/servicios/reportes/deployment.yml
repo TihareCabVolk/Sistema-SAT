@@ -12,6 +12,13 @@ spec:
       labels:
         app: reportes
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: reportes
+              topologyKey: "kubernetes.io/hostname"
       containers:
         - name: reportes
           image: sat-reportes:latest
@@ -22,6 +29,18 @@ spec:
                 name: sat-config
             - secretRef:
                 name: sat-secrets
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 4001
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 4001
+            initialDelaySeconds: 5
+            periodSeconds: 10
           resources:
             requests:
               memory: "64Mi"

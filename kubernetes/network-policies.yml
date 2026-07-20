@@ -1,0 +1,263 @@
+# Estas politicas se aplican a cada namespace (sat-qa, sat-prod) por separado.
+#   - Frontend NUNCA debe ver la red de datos (DBs, RabbitMQ)
+#   - API Gateway es el unico punto de entrada externo
+#   - Servicios solo hablan con su propia DB y con RabbitMQ
+
+# 1. DENEGAR TODO EL TRAFICO POR DEFECTO
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+
+---
+
+# 2. PERMITIR DNS (kube-dns) PARA TODOS LOS PODS
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+        - podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+---
+# 3. API GATEWAY A LOS SERVICIOS BACKEND + FRONTEND
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-from-gateway
+spec:
+  podSelector:
+    matchLabels:
+      app: nginx-gateway
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Permitir trafico desde el Ingress Controller (namespace ingress-nginx)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+  egress:
+    # Gateway al Servicio Reportes
+    - to:
+        - podSelector:
+            matchLabels:
+              app: reportes
+      ports:
+        - protocol: TCP
+          port: 4001
+    # Gateway al Servicio Validacion
+    - to:
+        - podSelector:
+            matchLabels:
+              app: validacion
+      ports:
+        - protocol: TCP
+          port: 4002
+    # Gateway al Servicio Logistica
+    - to:
+        - podSelector:
+            matchLabels:
+              app: logistica
+      ports:
+        - protocol: TCP
+          port: 4003
+    # Gateway al Frontend
+    - to:
+        - podSelector:
+            matchLabels:
+              app: frontend
+      ports:
+        - protocol: TCP
+          port: 80
+
+---
+# 4. SERVICIOS RECIBEN TRAFICO DEL GATEWAY
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-servicios-ingress
+spec:
+  podSelector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values: [reportes, validacion, logistica]
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: nginx-gateway
+      ports:
+        - protocol: TCP
+          port: 4001
+        - protocol: TCP
+          port: 4002
+        - protocol: TCP
+          port: 4003
+
+---
+# 5. SERVICIOS BACKEND A BASES DE DATOS
+#    (reportesa a db-reports, validacion a db-validacion, logistica a db-logistica)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-servicios-to-db
+spec:
+  podSelector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values: [db-reportes, db-validacion, db-logistica]
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: reportes
+        - podSelector:
+            matchLabels:
+              app: validacion
+        - podSelector:
+            matchLabels:
+              app: logistica
+      ports:
+        - protocol: TCP
+          port: 5432
+
+---
+# 6. SERVICIOS BACKEND A RABBITMQ
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-servicios-to-rabbitmq
+spec:
+  podSelector:
+    matchLabels:
+      app: rabbitmq
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: reportes
+        - podSelector:
+            matchLabels:
+              app: validacion
+        - podSelector:
+            matchLabels:
+              app: logistica
+      ports:
+        - protocol: TCP
+          port: 5672
+        - protocol: TCP
+          port: 15672
+
+---
+# 7. CRONJOB DE BACKUP A BASES DE DATOS
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backup-to-db
+spec:
+  podSelector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values: [db-reportes, db-validacion, db-logistica]
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              job-name: backup-dbs
+      ports:
+        - protocol: TCP
+          port: 5432
+
+---
+# 8. PERMITIR TRAFICO DE MONITOREO (FLUENT BIT a ES, KIBANA)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-logging
+spec:
+  podSelector:
+    matchLabels:
+      app: elasticsearch
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: fluentbit
+      ports:
+        - protocol: TCP
+          port: 9200
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-kibana
+spec:
+  podSelector:
+    matchLabels:
+      app: kibana
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: nginx-gateway
+      ports:
+        - protocol: TCP
+          port: 5601
+
+---
+# 9. FRONTEND: SOLO RECIBE DEL GATEWAY (NO PUEDE LLEGAR A DBs)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend-ingress
+spec:
+  podSelector:
+    matchLabels:
+      app: frontend
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: nginx-gateway
+      ports:
+        - protocol: TCP
+          port: 80

@@ -1,18 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ENTORNO="${1:-}"
-
-if [ "$ENTORNO" != "QA" ] && [ "$ENTORNO" != "PROD" ]; then
-    echo "ERROR: debes pasar QA o PROD como argumento"
-    echo "  Uso: $0 QA"
-    echo "  Uso: $0 PROD"
-    exit 1
-fi
-
 echo ""
 echo "=============================================="
-echo " Instalando GitHub Actions Runner para: $ENTORNO"
+echo " Instalando GitHub Actions Runner (cluster unificado)"
 echo "=============================================="
 
 # --- Detectar SO ---
@@ -32,7 +23,7 @@ echo ""
 read -rp "URL del repositorio (ej: https://github.com/usuario/repo): " REPO_URL
 read -rp "Token del runner (de la pagina de GitHub): " RUNNER_TOKEN
 
-RUNNER_DIR="$HOME/actions-runner-$ENTORNO"
+RUNNER_DIR="$HOME/actions-runner"
 
 # =============================================================================
 # 1. Instalar dependencias segun SO
@@ -88,7 +79,7 @@ esac
 echo "[2/6] Verificando kubectl..."
 if command -v kubectl &>/dev/null; then
     echo "    kubectl: $(kubectl version --client --short 2>/dev/null || kubectl version --client 2>/dev/null || echo 'OK')"
-    kubectl cluster-info 2>/dev/null && echo "    Cluster: CONECTADO" || echo "    [!] Cluster no accesible. Crea KIND antes del primer deploy."
+    kubectl cluster-info 2>/dev/null && echo "    Cluster: CONECTADO" || echo "    [!] Cluster no accesible. Configura kubeconfig primero."
 else
     echo "    [!] ERROR: kubectl no se pudo instalar."
     exit 1
@@ -117,7 +108,9 @@ if [ -f "$HOME/.kube/config" ]; then
     echo "    Kubeconfig: ENCONTRADO"
 else
     echo "    [!] ADVERTENCIA: ~/.kube/config no existe."
-    echo "    Ejecuta 'kind create cluster' antes del primer deploy."
+    echo "    Copia el kubeconfig de VM1:"
+    echo "      mkdir -p ~/.kube"
+    echo "      sudo cat /etc/rancher/k3s/k3s.yaml | sed 's/127.0.0.1/146.83.102.21/g' > ~/.kube/config"
 fi
 
 # =============================================================================
@@ -140,8 +133,8 @@ rm actions-runner.tar.gz
 
 echo "[6/6] Configurando runner..."
 ./config.sh --url "$REPO_URL" --token "$RUNNER_TOKEN" \
-    --name "sat-$ENTORNO-$(hostname)" \
-    --labels "sat-$ENTORNO" \
+    --name "sat-$(hostname)" \
+    --labels "sat" \
     --work "_work" \
     --unattended \
     --replace
@@ -160,8 +153,8 @@ if [ "$OS" = "alpine" ]; then
     echo "   cd $RUNNER_DIR && nohup ./run.sh &"
     echo ""
     echo " O crea un script de inicio en /etc/local.d/:"
-    echo "   echo 'cd $RUNNER_DIR && nohup ./run.sh &' | sudo tee /etc/local.d/runner-$ENTORNO.start"
-    echo "   sudo chmod +x /etc/local.d/runner-$ENTORNO.start"
+    echo "   echo 'cd $RUNNER_DIR && nohup ./run.sh &' | sudo tee /etc/local.d/runner.start"
+    echo "   sudo chmod +x /etc/local.d/runner.start"
     echo "   sudo rc-update add local"
 else
     sudo ./svc.sh install
@@ -172,10 +165,11 @@ fi
 
 echo ""
 echo "=============================================="
-echo " Runner listo para: $ENTORNO"
+echo " Runner listo (cluster unificado)"
+echo " Etiqueta:          sat"
 echo " Directorio:        $RUNNER_DIR"
 echo " Logs:              tail -f $RUNNER_DIR/_diag/*.log"
 echo ""
 echo " IMPORTANTE: en GitHub, el runner debe aparecer como 'Idle'"
-echo " en Settings → Actions → Runners"
-echo "========================== ===================="
+echo " en Settings -> Actions -> Runners"
+echo "=============================================="

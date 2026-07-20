@@ -13,6 +13,13 @@ spec:
       labels:
         app: validacion
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: validacion
+              topologyKey: "kubernetes.io/hostname"
       containers:
         - name: validacion
           image: sat-validacion:latest
@@ -23,10 +30,22 @@ spec:
                 name: sat-config
             - secretRef:
                 name: sat-secrets
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 4002
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 4002
+            initialDelaySeconds: 5
+            periodSeconds: 10
           resources:
             requests:
               memory: "64Mi"
               cpu: "100m"
             limits:
               memory: "128Mi"
-            cpu: "200m"
+              cpu: "200m"

@@ -51,7 +51,7 @@ jobs:
 
   deploy:
     name: Deploy to PROD
-    runs-on: [self-hosted, sat-prod]
+    runs-on: [self-hosted, sat]
     needs: build
 
     steps:

@@ -12,11 +12,30 @@ spec:
       labels:
         app: nginx-gateway
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: nginx-gateway
+              topologyKey: "kubernetes.io/hostname"
       containers:
         - name: nginx-gateway
           image: sat-nginx-gateway:latest
           ports:
             - containerPort: 80
+          livenessProbe:
+            httpGet:
+              path: /api/reportes
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /api/reportes
+              port: 80
+            initialDelaySeconds: 3
+            periodSeconds: 10
           resources:
             requests:
               memory: "32Mi"

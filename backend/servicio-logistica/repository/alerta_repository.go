@@ -72,3 +72,9 @@ func (r *AlertaRepository) ObtenerPorID(ctx context.Context, id string) (*models
 	json.Unmarshal(zonasJSON, &a.ZonasAfectadas)
 	return &a, nil
 }
+
+func (r *AlertaRepository) ExistePorIdValidacion(ctx context.Context, idValidacion string) (bool, error) {
+	var existe bool
+	err := r.db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM alertas WHERE id_validacion = $1)`, idValidacion).Scan(&existe)
+	return existe, err
+}

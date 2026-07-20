@@ -13,6 +13,15 @@ spec:
       labels:
         app: db-reportes
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: "nodo"
+                    operator: In
+                    values:
+                      - "vm1"
       containers:
         - name: postgres
           image: postgres:16-alpine

@@ -20,6 +20,15 @@ func NewLogisticaService(repo *repository.AlertaRepository) *LogisticaService {
 }
 
 func (s *LogisticaService) ProcesarValidacion(ctx context.Context, vp *models.ValidacionPositiva) (*models.AlertaEmitida, error) {
+	existe, err := s.repo.ExistePorIdValidacion(ctx, vp.IdSenal)
+	if err != nil {
+		return nil, err
+	}
+	if existe {
+		log.Printf("[logistica] idempotencia: validacion %s ya procesada, ignorando", vp.IdSenal)
+		return nil, nil
+	}
+
 	nivel := s.calcularNivelAlerta(vp.MagnitudFinal)
 	costo := s.calcularCosto(vp.MagnitudFinal)
 	zonas := vp.ZonasAfectadas

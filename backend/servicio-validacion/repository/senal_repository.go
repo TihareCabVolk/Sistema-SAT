@@ -62,3 +62,12 @@ func (r *SenalRepository) MarcarValidadas(ctx context.Context, tx *sql.Tx, ids [
 	_, err := tx.ExecContext(ctx, `UPDATE senales SET validada = true WHERE id = ANY($1)`, pq.Array(ids))
 	return err
 }
+
+func (r *SenalRepository) EstaValidada(ctx context.Context, id string) (bool, error) {
+	var validada bool
+	err := r.db.QueryRowContext(ctx, `SELECT validada FROM senales WHERE id = $1`, id).Scan(&validada)
+	if err == sql.ErrNoRows {
+		return false, nil
+	}
+	return validada, err
+}
