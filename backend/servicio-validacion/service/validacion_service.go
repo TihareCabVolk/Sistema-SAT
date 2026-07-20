@@ -38,11 +38,20 @@ func (s *ValidacionService) ProcesarSenal(ctx context.Context, sr *models.SenalR
 		Timestamp:     sr.Timestamp,
 	}
 
-	if err := s.repo.Insertar(ctx, senal); err != nil {
+	tx, err := s.repo.BeginTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	if err := s.repo.Insertar(ctx, tx, senal); err != nil {
 		return nil, err
 	}
 
-	recientes, err := s.repo.BuscarRecientes(ctx, s.ventanaSeg)
+	// FOR UPDATE bloquea las filas candidatas hasta el commit: si otra réplica está
+	// procesando una señal que cae en el mismo grupo, espera aquí en vez de contar
+	// sensores en paralelo sobre datos que todavía no se marcaron como validados.
+	recientes, err := s.repo.BuscarRecientesParaActualizar(ctx, tx, s.ventanaSeg)
 	if err != nil {
 		return nil, err
 	}
@@ -51,6 +60,9 @@ func (s *ValidacionService) ProcesarSenal(ctx context.Context, sr *models.SenalR
 
 	sensores := s.sensoresUnicos(cercanas)
 	if len(sensores) < s.minSensores {
+		if err := tx.Commit(); err != nil {
+			return nil, err
+		}
 		log.Printf("[validacion] señal %s guardada, %d/%d sensores confirmados", senal.ID, len(sensores), s.minSensores)
 		return nil, nil
 	}
@@ -65,7 +77,14 @@ func (s *ValidacionService) ProcesarSenal(ctx context.Context, sr *models.SenalR
 	}
 	n := float64(len(cercanas))
 
-	if err := s.repo.MarcarValidadas(ctx, ids); err != nil {
+	// Marca el grupo como procesado dentro de la misma transacción: al hacer commit,
+	// ninguna otra réplica volverá a ver estas filas como validada=false, así que no
+	// puede volver a publicar validacion_positiva para el mismo grupo.
+	if err := s.repo.MarcarValidadas(ctx, tx, ids); err != nil {
+		return nil, err
+	}
+
+	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
 

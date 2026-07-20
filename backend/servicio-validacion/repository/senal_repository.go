@@ -17,8 +17,12 @@ func NewSenalRepository(db *sql.DB) *SenalRepository {
 	return &SenalRepository{db: db}
 }
 
-func (r *SenalRepository) Insertar(ctx context.Context, s *models.Senal) error {
-	_, err := r.db.ExecContext(ctx, `
+func (r *SenalRepository) BeginTx(ctx context.Context) (*sql.Tx, error) {
+	return r.db.BeginTx(ctx, nil)
+}
+
+func (r *SenalRepository) Insertar(ctx context.Context, tx *sql.Tx, s *models.Senal) error {
+	_, err := tx.ExecContext(ctx, `
 		INSERT INTO senales (id, id_sensor, lat, lon, magnitud, profundidad_km, confianza, timestamp, validada)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 		ON CONFLICT (id) DO NOTHING
@@ -26,11 +30,16 @@ func (r *SenalRepository) Insertar(ctx context.Context, s *models.Senal) error {
 	return err
 }
 
-func (r *SenalRepository) BuscarRecientes(ctx context.Context, ventanaSeg int) ([]models.Senal, error) {
-	rows, err := r.db.QueryContext(ctx, `
+// BuscarRecientesParaActualizar bloquea (FOR UPDATE) las señales candidatas dentro de la
+// ventana de tiempo para que ninguna otra réplica pueda leer/marcar el mismo grupo hasta
+// que esta transacción termine (commit o rollback).
+func (r *SenalRepository) BuscarRecientesParaActualizar(ctx context.Context, tx *sql.Tx, ventanaSeg int) ([]models.Senal, error) {
+	rows, err := tx.QueryContext(ctx, `
 		SELECT id, id_sensor, lat, lon, magnitud, profundidad_km, confianza, timestamp, validada
 		FROM senales
 		WHERE validada = false AND timestamp >= NOW() - ($1::text || ' seconds')::interval
+		ORDER BY id
+		FOR UPDATE
 	`, ventanaSeg)
 	if err != nil {
 		return nil, err
@@ -49,7 +58,7 @@ func (r *SenalRepository) BuscarRecientes(ctx context.Context, ventanaSeg int) (
 	return senales, rows.Err()
 }
 
-func (r *SenalRepository) MarcarValidadas(ctx context.Context, ids []string) error {
-	_, err := r.db.ExecContext(ctx, `UPDATE senales SET validada = true WHERE id = ANY($1)`, pq.Array(ids))
+func (r *SenalRepository) MarcarValidadas(ctx context.Context, tx *sql.Tx, ids []string) error {
+	_, err := tx.ExecContext(ctx, `UPDATE senales SET validada = true WHERE id = ANY($1)`, pq.Array(ids))
 	return err
 }
