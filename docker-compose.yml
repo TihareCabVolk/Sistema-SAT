@@ -82,6 +82,8 @@ services:
       DB_REPORTES_URL: postgres://reportes:password@db-reportes:5432/reportes?sslmode=disable
       RABBITMQ_URL: amqp://sat-user:sat-pass@rabbitmq:5672/
       RABBITMQ_EXCHANGE: sat.events
+    ports:
+      - "4001:4001"
 
   svc-validacion:
     build:
@@ -102,6 +104,8 @@ services:
       RADIO_KM: "100"
       VENTANA_SEG: "60"
       MIN_SENSORES: "3"
+    ports:
+      - "4002:4002"
 
   svc-logistica:
     build:
@@ -118,6 +122,8 @@ services:
       DB_LOGISTICA_URL: postgres://logistica:password@db-logistica:5432/logistica?sslmode=disable
       RABBITMQ_URL: amqp://sat-user:sat-pass@rabbitmq:5672/
       RABBITMQ_EXCHANGE: sat.events
+    ports:
+      - "4003:4003"
   
   svc-frontend:
     build:
