@@ -22,6 +22,7 @@ spec:
       containers:
         - name: frontend
           image: sat-frontend:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
           livenessProbe:

@@ -22,6 +22,7 @@ spec:
       containers:
         - name: nginx-gateway
           image: sat-nginx-gateway:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
           livenessProbe:

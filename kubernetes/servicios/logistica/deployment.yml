@@ -22,6 +22,7 @@ spec:
       containers:
         - name: logistica
           image: sat-logistica:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 4003
           envFrom:
