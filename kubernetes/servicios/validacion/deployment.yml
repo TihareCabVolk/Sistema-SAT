@@ -23,6 +23,7 @@ spec:
       containers:
         - name: validacion
           image: sat-validacion:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 4002
           envFrom:
