@@ -11,47 +11,26 @@ Comunicación síncrona (REST) para ingesta de reportes y asíncrona (RabbitMQ) 
 
 ```mermaid
 graph TD
-    A[Sensor / Cliente] -->|POST /api/reportes| GW[NGINX API Gateway :80]
-    GW -->|/api/reportes/*| S1[Servicio 1: Reportes :4001]
-    GW -->|/api/validacion/*| S2[Servicio 2: Validación :4002]
-    GW -->|/api/logistica/*| S3[Servicio 3: Logística :4003]
-    GW -->|/*| FE[Frontend React :80]
+    A[Sensor / Cliente] -->|"POST /api/reportes"| GW[NGINX API Gateway :80]
 
-    S1 -->|INSERT| DB1[(DB Reportes<br>PostgreSQL :5432)]
-    S1 -->|pub senal_recibida| RMQ[RabbitMQ<br>Exchange: sat.events :5672]
+    GW -->|"/api/reportes"| S1["Servicio 1: Reportes :4001"]
+    GW -->|"/api/logistica"| S3["Servicio 3: Logística :4003"]
+    GW -->|"/* (SPA)"| FE["Frontend React"]
 
-    RMQ -->|con senal_recibida| S2
-    S2 -->|SELECT| DB2[(DB Validación<br>PostgreSQL :5432)]
-    S2 -->|pub validacion_positiva| RMQ
+    S1 -->|"INSERT estado=RECIBIDO"| DB1[("DB Reportes<br>PostgreSQL")]
+    S1 -->|"pub senal_recibida"| RMQ["RabbitMQ<br>Exchange: sat.events<br>Tipo: topic"]
 
-    RMQ -->|con validacion_positiva| S3
-    S3 -->|INSERT| DB3[(DB Logística<br>PostgreSQL :5432)]
-    S3 -->|pub alerta_emitida| RMQ
+    RMQ -->|"con senal_recibida"| S2["Servicio 2: Validación :4002"]
+    S2 -->|"INSERT + UPDATE"| DB2[("DB Validación<br>PostgreSQL")]
+    S2 -->|"pub validacion_positiva"| RMQ
 
-    RMQ -->|con alerta_emitida| S1
-    S1 -->|UPDATE estado=EMITIDA| DB1
+    RMQ -->|"con validacion_positiva"| S3
+    S3 -->|"INSERT alerta estado=EMITIDA"| DB3[("DB Logística<br>PostgreSQL")]
+    S3 -->|"pub alerta_emitida"| RMQ
 
-    FB[Fluent Bit<br>DaemonSet] -->|logs| ES[Elasticsearch]
-    ES --> KBN[Kibana Dashboard]
+    RMQ -->|"con alerta_emitida"| S1
+    S1 -->|"UPDATE estado=EMITIDA"| DB1
 
-    CJ[CronJob<br>*/10 min] -->|pg_dump| PVC[(Backup PVC 5Gi)]
-
-    subgraph Kubernetes
-        GW
-        S1
-        S2
-        S3
-        FE
-        DB1
-        DB2
-        DB3
-        RMQ
-        FB
-        ES
-        KBN
-        CJ
-        PVC
-    end
 ```
 
 ---
